@@ -20,10 +20,25 @@ namespace Inventory.Controllers
         }
 
         // GET: Products
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchName, string categoryFilter)
         {
-            var inventoryDbContext = _context.Products.Include(p => p.Category);
-            return View(await inventoryDbContext.ToListAsync());
+            ViewBag.SearchName = searchName;
+            ViewBag.CategoryFilter = categoryFilter;
+
+            IQueryable<Product> products = _context.Products.Include(p => p.Category);
+            if (!string.IsNullOrEmpty(searchName))
+            {
+                products = products.Where(p => p.Name.Contains(searchName));
+            }
+            if (!string.IsNullOrEmpty(categoryFilter))
+            {
+                products = products.Where(p => p.Category != null && p.Category.Name.Contains(categoryFilter));
+            }
+
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+
+            // var inventoryDbContext = _context.Products.Include(p => p.Category);
+            return View(await products.ToListAsync());
         }
 
         // GET: Products/Details/5
