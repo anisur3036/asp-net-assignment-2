@@ -50,14 +50,14 @@ namespace Inventory.Controllers
         }
 
         // POST: Categories/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,CreatedDate,ModifiedDate")] Category category)
+        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
         {
             if (ModelState.IsValid)
             {
+                category.CreatedDate = DateTime.Now;
+                category.ModifiedDate = DateTime.Now;
                 _context.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -82,11 +82,9 @@ namespace Inventory.Controllers
         }
 
         // POST: Categories/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,CreatedDate,ModifiedDate")] Category category)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
         {
             if (id != category.Id)
             {
@@ -97,6 +95,8 @@ namespace Inventory.Controllers
             {
                 try
                 {
+                    category.ModifiedDate = DateTime.Now;
+                    category.CreatedDate = _context.Categories.AsNoTracking().FirstOrDefault(c => c.Id == id)?.CreatedDate ?? DateTime.Now;
                     _context.Update(category);
                     await _context.SaveChangesAsync();
                 }

@@ -52,21 +52,21 @@ namespace Inventory.Controllers
             return View();
         }
 
-        // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,CategoryId,Price,Quantity,CreatedDate,ModifiedDate")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,CategoryId,Price,Quantity")] Product product)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
-            return View(product);
+
+            if (!ModelState.IsValid)
+                return View(product);
+
+            product.CreatedDate = DateTime.Now;
+            product.ModifiedDate = DateTime.Now;
+
+            _context.Add(product);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Products/Edit/5
@@ -87,11 +87,9 @@ namespace Inventory.Controllers
         }
 
         // POST: Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,CategoryId,Price,Quantity,CreatedDate,ModifiedDate")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,CategoryId,Price,Quantity")] Product product)
         {
             if (id != product.Id)
             {
@@ -102,6 +100,8 @@ namespace Inventory.Controllers
             {
                 try
                 {
+                    product.ModifiedDate = DateTime.Now;
+                    product.CreatedDate = _context.Products.AsNoTracking().FirstOrDefault(p => p.Id == id)?.CreatedDate ?? DateTime.Now;
                     _context.Update(product);
                     await _context.SaveChangesAsync();
                 }
