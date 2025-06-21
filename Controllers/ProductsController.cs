@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Inventory.Data;
 using Inventory.Models.Entities;
+using Inventory.Services.Interfaces;
 
 namespace Inventory.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly InventoryDbContext _context;
+        private readonly IProductServices _productServices;
 
-        public ProductsController(InventoryDbContext context)
+        public ProductsController(InventoryDbContext context, IProductServices productServices)
         {
             _context = context;
+            _productServices = productServices;
         }
 
         // GET: Products
@@ -24,34 +27,15 @@ namespace Inventory.Controllers
         {
             ViewBag.SearchName = searchName;
             ViewBag.CategoryFilter = categoryFilter;
-
-            IQueryable<Product> products = _context.Products.Include(p => p.Category);
-            if (!string.IsNullOrEmpty(searchName))
-            {
-                products = products.Where(p => p.Name.Contains(searchName));
-            }
-            if (!string.IsNullOrEmpty(categoryFilter))
-            {
-                products = products.Where(p => p.Category != null && p.Category.Name.Contains(categoryFilter));
-            }
-
             ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
 
-            // var inventoryDbContext = _context.Products.Include(p => p.Category);
-            return View(await products.ToListAsync());
+            return View(await _productServices.GetFilterdProductsAsync(searchName, categoryFilter));
         }
 
         // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _productServices.GetProductByIdAsync(id);
             if (product == null)
             {
                 return NotFound();
@@ -76,11 +60,7 @@ namespace Inventory.Controllers
             if (!ModelState.IsValid)
                 return View(product);
 
-            product.CreatedDate = DateTime.Now;
-            product.ModifiedDate = DateTime.Now;
-
-            _context.Add(product);
-            await _context.SaveChangesAsync();
+            await _productServices.AddProductAsync(product);
             return RedirectToAction(nameof(Index));
         }
 
@@ -113,45 +93,26 @@ namespace Inventory.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    product.ModifiedDate = DateTime.Now;
-                    product.CreatedDate = _context.Products.AsNoTracking().FirstOrDefault(p => p.Id == id)?.CreatedDate ?? DateTime.Now;
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProductExists(product.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _productServices.UpdateProductAsync(product);
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
             return View(product);
         }
 
         // GET: Products/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var product = await _productServices.GetProductByIdAsync(id);
 
-            var product = await _context.Products
-                .Include(p => p.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
             if (product == null)
             {
                 return NotFound();
             }
+
+            _productServices.DeleteProduct(product);
 
             return View(product);
         }
@@ -161,19 +122,13 @@ namespace Inventory.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productServices.GetProductByIdAsync(id);
             if (product != null)
             {
-                _context.Products.Remove(product);
+                _productServices.DeleteProduct(product);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ProductExists(int id)
-        {
-            return _context.Products.Any(e => e.Id == id);
         }
     }
 }

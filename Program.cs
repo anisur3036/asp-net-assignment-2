@@ -1,4 +1,8 @@
 using Inventory.Data;
+using Inventory.Repositories.Implementations;
+using Inventory.Repositories.interfaces;
+using Inventory.Services.Implements;
+using Inventory.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<InventoryDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductServices, ProductServices>();
 
 var app = builder.Build();
 
