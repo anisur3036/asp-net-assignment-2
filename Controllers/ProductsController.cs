@@ -3,6 +3,7 @@ using Inventory.Data;
 using Inventory.Models.Entities;
 using Inventory.Services.Interfaces;
 using System.Threading.Tasks;
+using Inventory.Models;
 
 namespace Inventory.Controllers
 {
@@ -51,7 +52,7 @@ namespace Inventory.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,CategoryId,Price,Quantity")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,CategoryId,Price,Quantity")] ProductCreateViewModel product)
         {
             ViewData["CategoryId"] = _categoryServices.GetSelectedList(product.CategoryId);
 
@@ -76,14 +77,25 @@ namespace Inventory.Controllers
             {
                 return NotFound();
             }
+            var productViewModel = new EditProductViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                CategoryId = product.CategoryId ?? 0,
+                Price = product.Price,
+                Quantity = product.Quantity,
+                CreatedDate = product.CreatedDate,
+                ModifiedDate = product.ModifiedDate
+            };
+
             ViewData["CategoryId"] = _categoryServices.GetSelectedList(product.CategoryId);
-            return View(product);
+            return View(productViewModel);
         }
 
         // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,CategoryId,Price,Quantity")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,CategoryId,Price,Quantity")] EditProductViewModel product)
         {
             if (id != product.Id)
             {

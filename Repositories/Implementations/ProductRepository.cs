@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Inventory.Data;
+using Inventory.Models;
 using Inventory.Models.Entities;
 using Inventory.Repositories.interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -18,12 +19,19 @@ namespace Inventory.Repositories.Implementations
         {
             _products = context.Set<Product>();
         }
-        public async void AddProduct(Product product)
+        public async void AddProduct(ProductCreateViewModel product)
         {
-            product.CreatedDate = DateTime.Now;
-            product.ModifiedDate = DateTime.Now;
+            var newPproduct = new Product
+            {
+                Name = product.Name,
+                CategoryId = product.CategoryId,
+                Price = product.Price,
+                Quantity = product.Quantity,
+                CreatedDate = DateTime.Now,
+                ModifiedDate = DateTime.Now
+            };
 
-            await _products.AddAsync(product);
+            await _products.AddAsync(newPproduct);
         }
 
         public void DeleteProduct(Product product)
@@ -61,12 +69,20 @@ namespace Inventory.Repositories.Implementations
                 .FirstOrDefaultAsync(m => m.Id == productId);
         }
 
-        public void UpdateProduct(Product product)
+        public void UpdateProduct(EditProductViewModel product)
         {
-            product.ModifiedDate = DateTime.Now;
-            product.CreatedDate = _products.AsNoTracking().FirstOrDefault(p => p.Id == product.Id)?.CreatedDate ?? DateTime.Now;
+            var newProduct = new Product
+            {
+                Id = product.Id,
+                Name = product.Name,
+                CategoryId = product.CategoryId,
+                Price = product.Price,
+                Quantity = product.Quantity,
+                ModifiedDate = DateTime.Now,
+                CreatedDate = _products.AsNoTracking().FirstOrDefault(p => p.Id == product.Id)?.CreatedDate ?? DateTime.Now,
+            };
 
-            _products.Update(product);
+            _products.Update(newProduct);
         }
     }
 }

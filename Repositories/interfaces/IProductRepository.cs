@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
+using Inventory.Models;
 using Inventory.Models.Entities;
 
 namespace Inventory.Repositories.interfaces
@@ -14,8 +11,8 @@ namespace Inventory.Repositories.interfaces
         Task<IEnumerable<Product>> GetFilterdProductsAsync(string searchName, string categoryFilter);
         Task<Product?> GetProductByIdAsync(int? productId);
         Task<IEnumerable<Product>> FindAllProductsAsync(Expression<Func<Product, bool>> predicate);
-        void AddProduct(Product product);
-        void UpdateProduct(Product product);
+        void AddProduct(ProductCreateViewModel product);
+        void UpdateProduct(EditProductViewModel product);
         void DeleteProduct(Product product);
     }
 }

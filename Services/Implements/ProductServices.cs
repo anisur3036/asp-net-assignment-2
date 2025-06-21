@@ -1,4 +1,5 @@
 using Inventory.Data.UnitOfWork;
+using Inventory.Models;
 using Inventory.Models.Entities;
 using Inventory.Services.Interfaces;
 
@@ -11,7 +12,7 @@ namespace Inventory.Services.Implements
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task AddProduct(Product product)
+        public async Task AddProduct(ProductCreateViewModel product)
         {
             _unitOfWork.ProductRepository.AddProduct(product);
             await _unitOfWork.SaveAsync();
@@ -38,7 +39,7 @@ namespace Inventory.Services.Implements
             return await _unitOfWork.ProductRepository.GetProductByIdAsync(productId);
         }
 
-        public async Task UpdateProductAsync(Product product)
+        public async Task UpdateProductAsync(EditProductViewModel product)
         {
             _unitOfWork.ProductRepository.UpdateProduct(product);
             await _unitOfWork.SaveAsync();
