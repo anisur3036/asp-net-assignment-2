@@ -12,11 +12,9 @@ namespace Inventory.Services.Interfaces
 
         Task<IEnumerable<Product>> GetAllProductsAsync();
         Task<IEnumerable<Product>> GetFilterdProductsAsync(string searchName, string categoryFilter);
-        Task<Product?> GetProductByIdAsync(int productId);
-        Task AddProductAsync(Product product);
+        Task<Product?> GetProductByIdAsync(int? productId);
+        Task AddProduct(Product product);
         Task UpdateProductAsync(Product product);
-        void DeleteProduct(Product product);
-
-
+        Task DeleteProductAsync(Product product);
     }
 }

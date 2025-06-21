@@ -12,26 +12,23 @@ namespace Inventory.Repositories.Implementations
 {
     public class ProductRepository : IProductRepository
     {
-        private readonly InventoryDbContext _context;
+        private readonly DbSet<Product> _products;
 
         public ProductRepository(InventoryDbContext context)
         {
-            _context = context;
+            _products = context.Set<Product>();
         }
-        public async Task AddProductAsync(Product product)
+        public async void AddProduct(Product product)
         {
             product.CreatedDate = DateTime.Now;
             product.ModifiedDate = DateTime.Now;
 
-            await _context.Products.AddAsync(product);
-
-            await _context.SaveChangesAsync();
+            await _products.AddAsync(product);
         }
 
-        public async void DeleteProduct(Product product)
+        public void DeleteProduct(Product product)
         {
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
+            _products.Remove(product);
         }
         public Task<IEnumerable<Product>> FindAllProductsAsync(Expression<Func<Product, bool>> predicate)
         {
@@ -45,7 +42,7 @@ namespace Inventory.Repositories.Implementations
 
         public async Task<IEnumerable<Product>> GetFilterdProductsAsync(string searchName, string categoryFilter)
         {
-            IQueryable<Product> products = _context.Products.Include(p => p.Category);
+            IQueryable<Product> products = _products.Include(p => p.Category);
             if (!string.IsNullOrEmpty(searchName))
             {
                 products = products.Where(p => p.Name.Contains(searchName));
@@ -58,20 +55,18 @@ namespace Inventory.Repositories.Implementations
             return await products.ToListAsync();
         }
 
-        public async Task<Product?> GetProductByIdAsync(int productId)
+        public async Task<Product?> GetProductByIdAsync(int? productId)
         {
-            return await _context.Products.Include(p => p.Category)
+            return await _products.Include(p => p.Category)
                 .FirstOrDefaultAsync(m => m.Id == productId);
         }
 
-        public async Task UpdateProductAsync(Product product)
+        public void UpdateProduct(Product product)
         {
             product.ModifiedDate = DateTime.Now;
-            product.CreatedDate = _context.Products.AsNoTracking().FirstOrDefault(p => p.Id == product.Id)?.CreatedDate ?? DateTime.Now;
+            product.CreatedDate = _products.AsNoTracking().FirstOrDefault(p => p.Id == product.Id)?.CreatedDate ?? DateTime.Now;
 
-            _context.Products.Update(product);
-
-            await _context.SaveChangesAsync();
+            _products.Update(product);
         }
     }
 }

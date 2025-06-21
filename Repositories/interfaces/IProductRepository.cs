@@ -12,10 +12,10 @@ namespace Inventory.Repositories.interfaces
         Task<IEnumerable<Product>> GetAllProductsAsync();
 
         Task<IEnumerable<Product>> GetFilterdProductsAsync(string searchName, string categoryFilter);
-        Task<Product?> GetProductByIdAsync(int productId);
+        Task<Product?> GetProductByIdAsync(int? productId);
         Task<IEnumerable<Product>> FindAllProductsAsync(Expression<Func<Product, bool>> predicate);
-        Task AddProductAsync(Product product);
-        Task UpdateProductAsync(Product product);
+        void AddProduct(Product product);
+        void UpdateProduct(Product product);
         void DeleteProduct(Product product);
     }
 }

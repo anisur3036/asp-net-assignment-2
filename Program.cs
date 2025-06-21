@@ -1,4 +1,5 @@
 using Inventory.Data;
+using Inventory.Data.UnitOfWork;
 using Inventory.Repositories.Implementations;
 using Inventory.Repositories.interfaces;
 using Inventory.Services.Implements;
@@ -13,6 +14,10 @@ builder.Services.AddDbContext<InventoryDbContext>(options => options.UseSqlServe
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductServices, ProductServices>();
+builder.Services.AddScoped<ICategoryRepositories, CategoryRepositories>();
+builder.Services.AddScoped<ICategoryServices, CategoryServices>();
+builder.Services.AddScoped<ICategoryServices, CategoryServices>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();
 

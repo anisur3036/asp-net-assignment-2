@@ -1,28 +1,26 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Inventory.Data.UnitOfWork;
 using Inventory.Models.Entities;
-using Inventory.Repositories.interfaces;
 using Inventory.Services.Interfaces;
 
 namespace Inventory.Services.Implements
 {
     public class ProductServices : IProductServices
     {
-        private readonly IProductRepository _productRepository;
-        public ProductServices(IProductRepository productRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public ProductServices(IUnitOfWork unitOfWork)
         {
-            _productRepository = productRepository;
+            _unitOfWork = unitOfWork;
         }
-        public async Task AddProductAsync(Product product)
+        public async Task AddProduct(Product product)
         {
-            await _productRepository.AddProductAsync(product);
+            _unitOfWork.ProductRepository.AddProduct(product);
+            await _unitOfWork.SaveAsync();
         }
 
-        public void DeleteProduct(Product product)
+        public async Task DeleteProductAsync(Product product)
         {
-            _productRepository.DeleteProduct(product);
+            _unitOfWork.ProductRepository.DeleteProduct(product);
+            await _unitOfWork.SaveAsync();
         }
 
         public Task<IEnumerable<Product>> GetAllProductsAsync()
@@ -32,17 +30,18 @@ namespace Inventory.Services.Implements
 
         public async Task<IEnumerable<Product>> GetFilterdProductsAsync(string searchName, string categoryFilter)
         {
-            return await _productRepository.GetFilterdProductsAsync(searchName, categoryFilter);
+            return await _unitOfWork.ProductRepository.GetFilterdProductsAsync(searchName, categoryFilter);
         }
 
-        public async Task<Product?> GetProductByIdAsync(int productId)
+        public async Task<Product?> GetProductByIdAsync(int? productId)
         {
-            return await _productRepository.GetProductByIdAsync(productId);
+            return await _unitOfWork.ProductRepository.GetProductByIdAsync(productId);
         }
 
         public async Task UpdateProductAsync(Product product)
         {
-            await _productRepository.UpdateProductAsync(product);
+            _unitOfWork.ProductRepository.UpdateProduct(product);
+            await _unitOfWork.SaveAsync();
         }
     }
 }
